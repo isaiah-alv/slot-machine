@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Slot Machine Game</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+         @import url('https://fonts.googleapis.com/css2?family=Honk&display=swap');
+         body{
+            background-color: green;
+         }
+
+         .container.mt-5{
+            background-color: rgba(255,255,255,0.4);
+         }
+
+         .container.mt-5 h1{
+            font-family: Honk;
+         }
+
+        .emoji {
+            font-size: 3rem;
+            display: inline-block;
+            min-width: 3rem;
+        }
+
+        .mt-3{
+         font-family: Honk;
+         font-size: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Emoji Slot Machine</h1>
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="alert alert-info">Your Bank: $<span id="bank">1000</span></div>
+                <div class="form-group">
+                    <label for="betAmount">Bet Amount</label>
+                    <input type="number" class="form-control" id="betAmount" placeholder="Enter Bet Amount">
+                </div>
+                <button class="btn btn-danger btn-block" onclick="playGame()">Play</button>
+                <div class="mt-3" id="slotResult">
+                    <span class="emoji"></span>
+                    <span class="emoji"></span>
+                    <span class="emoji"></span>
+                </div>
+                <div class="mt-3" id="slotResultMessage"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let bank = 1000;
+        const symbols = ["🍒", "💘", "🐶", "🐲", "🤖", "🃏", ''];
+
+        function playGame() {
+            let bet = parseInt(document.getElementById('betAmount').value);
+            if (isNaN(bet) || bet <= 0) {
+                alert("Please enter a valid bet amount.");
+                return;
+            }
+            if (bet > bank) {
+                alert("You cannot bet more than what you have in your bank.");
+                return;
+            }
+
+            document.getElementById('betAmount').value = '';
+            let result = [];
+            let slotElements = document.querySelectorAll('#slotResult .emoji');
+            slotElements.forEach(el => el.textContent = '');
+
+            rollSlot(0, result, bet, slotElements);
+        }
+
+        function rollSlot(index, result, bet, slotElements) {
+            if (index < 3) {
+                setTimeout(() => {
+                    let symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                    slotElements[index].textContent = symbol;
+                    result.push(symbol);
+                    rollSlot(index + 1, result, bet, slotElements);
+                }, 500);
+            } else {
+                calculateResult(result, bet);
+            }
+        }
+
+        function calculateResult(result, bet) {
+            if (new Set(result).size === 1) {
+                if (result[0] === "☕") {
+                    bet *= 10;
+                } else {
+                    bet *= 3;
+                }
+            } else if (new Set(result).size === 2) {
+                bet *= 2;
+            } else {
+                bet = -bet;
+            }
+
+            bank += bet;
+            document.getElementById('bank').textContent = bank;
+
+            displayResultMessage(result);
+
+            setTimeout(() => {
+               let slotElements = document.querySelectorAll('#slotResult .emoji');
+               slotElements.forEach(el => el.textContent = '');
+               document.getElementById('slotResultMessage').textContent = '';
+            }, 1000); 
+
+            if (bank <= 0) {
+               setTimeout(() => {
+                   if (confirm("You've run out of money! Do you want to restart the game?")) {
+                       restartGame();
+                   }
+               }, 1000); 
+           } else {
+               setTimeout(() => {
+                   let slotElements = document.querySelectorAll('#slotResult .emoji');
+                   slotElements.forEach(el => el.textContent = '');
+                   document.getElementById('slotResultMessage').textContent = '';
+               }, 1000); 
+           }
+
+
+        }
+        function displayResultMessage(result) {
+         let message = '';
+         if (new Set(result).size === 1) {
+             message = result[0] === "☕" ? 'Jackpot!' : 'Three in a row!';
+         } else if (new Set(result).size === 2) {
+             message = 'Two in a row!';
+         } else {
+             message = 'No matches!';
+         }
+         document.getElementById('slotResultMessage').textContent = message;
+         }
+
+         function restartGame() {
+            bank = 1000;
+            document.getElementById('bank').textContent = bank;
+            let slotElements = document.querySelectorAll('#slotResult .emoji');
+            slotElements.forEach(el => el.textContent = '');
+            document.getElementById('slotResultMessage').textContent = '';
+        }
+        
+     
+    </script>
+</body>
+</html>
